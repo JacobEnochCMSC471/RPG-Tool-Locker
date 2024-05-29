@@ -145,12 +145,8 @@ def remove_employee(emp_id: str, db_name: str) -> bool:
         return False
 
 
-def update_employee(emp_id: str, db_name: str) -> bool:
-    return False
-
-
-# Utility function to retrieve all employees from the table
-def get_all_employees(db_name: str) -> bool:
+# new_details has format [name, perm_level]
+def update_employee(emp_id: str, db_name: str, new_details: list) -> bool:
     try:
         if isSqlite3Db(db_name):
             # Create a connection + cursor
@@ -158,10 +154,12 @@ def get_all_employees(db_name: str) -> bool:
             db_cursor = db_conn.cursor()
 
             # Define the SQL delete statement
-            select_statement = 'SELECT * FROM employees'
+            exec_statement_name = 'UPDATE employees SET name = ? WHERE id = ?'
+            exec_statement_perm = 'UPDATE employees SET max_perm_level = ? WHERE id = ?'
 
             # Execute the command with the supplied user_id
-            db_cursor.execute(select_statement)
+            db_cursor.execute(exec_statement_perm, (new_details[0], emp_id))
+            db_cursor.execute(exec_statement_perm, (new_details[1], emp_id))
 
             # Commit the changes to the database + close the connection
             db_conn.commit()
@@ -179,9 +177,39 @@ def get_all_employees(db_name: str) -> bool:
         return False
 
 
-temp_emps = [("12345", "Jake Enoch", 5)]
-temp_employees_fr = [("0123456789", "Jake Enoch", 4)]
+# Utility function to retrieve all employees from the table
+def get_all_employees(db_name: str) -> list:
+    try:
+        if isSqlite3Db(db_name):
+            # Create a connection + cursor
+            db_conn = sqlite3.connect(db_name)
+            db_cursor = db_conn.cursor()
+
+            # Define the SQL delete statement
+            select_statement = 'SELECT * FROM employees'
+
+            # Execute the command with the supplied user_id
+            search_res = db_cursor.execute(select_statement).fetchall()
+
+            # Commit the changes to the database + close the connection
+            db_conn.commit()
+            db_conn.close()
+
+            return search_res
+
+        else:
+            print("Existing database not found. Initialize databases before attempting to modify them.\n")
+            return []
+
+    except Error as e:
+        print("Error has occurred! Check logs for answers.")
+        print(e)
+        return []
+
+
+temp_emps = [("12345678", "Jake Enoch", 5)]
 create_database("locker.db")
 add_employee(temp_emps, "locker.db")
+get_all_employees("locker.db")
 
-# remove_employee("12345", "locker.db")
+#remove_employee("12345678", "locker.db")
