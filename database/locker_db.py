@@ -1,6 +1,9 @@
 import sqlite3
 from sqlite3 import Error
 import os
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, filename='database.log')
 
 
 def isSqlite3Db(db: str) -> bool:
@@ -27,8 +30,11 @@ def isSqlite3Db(db: str) -> bool:
     return header[:16] == b'SQLite format 3\x00'
 
 
-def create_database(db_name: str) -> None:
+def create_database(db_name: str) -> bool:
     try:
+        if isSqlite3Db(db_name):
+            return False
+
         # Connect to the SQLite database (or create it if it doesn't exist)
         conn = sqlite3.connect(db_name)
 
@@ -70,14 +76,16 @@ def create_database(db_name: str) -> None:
         conn.commit()
         conn.close()
 
+        return True
+
     except sqlite3.OperationalError:
         print("Database already initialized.\n")
-        return
+        return False
 
     except sqlite3.Error as e:
         print("Fatal error has occurred! Check logs.")
         print(e)
-        return
+        return False
 
 
 # Create a new employee and add it to the database
@@ -158,7 +166,8 @@ def update_employee(emp_id: str, db_name: str, new_details: list) -> bool:
             exec_statement_perm = 'UPDATE employees SET max_perm_level = ? WHERE id = ?'
 
             # Execute the command with the supplied user_id
-            db_cursor.execute(exec_statement_perm, (new_details[0], emp_id))
+            print(new_details[0])
+            db_cursor.execute(exec_statement_name, (new_details[0], emp_id))
             db_cursor.execute(exec_statement_perm, (new_details[1], emp_id))
 
             # Commit the changes to the database + close the connection
@@ -207,9 +216,13 @@ def get_all_employees(db_name: str) -> list:
         return []
 
 
-temp_emps = [("12345678", "Jake Enoch", 5)]
-create_database("locker.db")
-add_employee(temp_emps, "locker.db")
-get_all_employees("locker.db")
+'''ldb = "locker.db"
 
-#remove_employee("12345678", "locker.db")
+temp_emps = [("12345678", "Jake Enoch", 5)]
+create_database(ldb)
+add_employee(temp_emps, ldb)
+get_all_employees(ldb)
+update_employee("12345678", ldb, ["John Enoch", 3])
+remove_employee("12345", ldb)
+remove_employee("12345678", ldb)
+# remove_employee("12345678", "locker.db")'''
