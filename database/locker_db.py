@@ -98,10 +98,11 @@ def wipe_table(db_name: str, table: str) -> None:
     db_conn.commit()
     db_conn.close()
 
+
 '''
 ------------------------------EMPLOYEE CRUD FUNCTIONS------------------------------
 '''
-
+'''
 
 # Create a new employee and add it to the database
 def add_employee(list_of_employees: list, db_name: str) -> bool:
@@ -201,6 +202,10 @@ def update_employee(emp_id: str, db_name: str, new_details: list) -> bool:
         return False
 
 
+def get_employee(db_name: str, emp_id: str) -> tuple:
+    return ()
+
+
 # Utility function to retrieve all employees from the table
 def get_all_employees(db_name: str) -> list:
     try:
@@ -228,6 +233,90 @@ def get_all_employees(db_name: str) -> list:
     except Error as e:
         print("Error has occurred! Check logs for answers.")
 
+        return []'''
+
+
+def add_employee(cursor: sqlite3.Cursor, list_of_employees: list) -> bool:
+    # Add items by using list of tuples [()], each individual tuple is one item
+    # Ex: [(12345, 'Jake Enoch', 4), (54321, 'Mark Treadwell', 7)]
+    try:
+        insert_statement = "INSERT INTO employees VALUES (?, ?, ?)"
+
+        if len(list_of_employees) < 1 or len(list_of_employees[0]) == 0:
+            print("Attempting to add 0 items to database. Check syntax and try again.\n")
+            return False
+
+        elif len(list_of_employees) == 1:
+            cursor.execute(insert_statement, list_of_employees.pop())
+        else:
+            cursor.executemany(insert_statement, list_of_employees)
+
+        cursor.connection.commit()
+        return True
+
+    except Error as e:
+        print(e)
+        return False
+
+
+def remove_employee(cursor: sqlite3.Cursor, emp_id: str) -> bool:
+    try:
+        # Define the SQL delete statement
+        delete_statement = 'DELETE FROM employees WHERE id = ?'
+
+        # Execute the command with the supplied user_id
+        cursor.execute(delete_statement, (emp_id,))
+
+        # Commit the changes to the database
+        cursor.connection.commit()
+        return True
+
+    except Error as e:
+        print("Error has occurred! Check logs for answers.")
+        print(e)
+        return False
+
+
+def update_employee(cursor: sqlite3.Cursor, emp_id: str, new_details: tuple) -> bool:
+    try:
+        # Define the SQL update statements
+        exec_statement_name = 'UPDATE employees SET name = ? WHERE id = ?'
+        exec_statement_perm = 'UPDATE employees SET max_perm_level = ? WHERE id = ?'
+
+        # Execute the commands with the supplied user_id
+        cursor.execute(exec_statement_name, (new_details[0], emp_id))
+        cursor.execute(exec_statement_perm, (new_details[1], emp_id))
+
+        # Commit the changes to the database
+        cursor.connection.commit()
+        return True
+
+    except Error as e:
+        print("Error has occurred! Check logs for answers.")
+        print(e)
+        return False
+
+
+def get_employee(cursor: sqlite3.Cursor, emp_id: str) -> tuple:
+    try:
+        select_statement = 'SELECT * FROM employees WHERE id = ?'
+        cursor.execute(select_statement, (emp_id,))
+        return cursor.fetchone()
+
+    except Error as e:
+        print("Error has occurred! Check logs for answers.")
+        print(e)
+        return ()
+
+
+def get_all_employees(cursor: sqlite3.Cursor) -> list:
+    try:
+        select_statement = 'SELECT * FROM employees'
+        return cursor.execute(select_statement).fetchall()
+
+    except Error as e:
+        print("Error has occurred! Check logs for answers.")
+        print(e)
         return []
 
 
@@ -239,9 +328,15 @@ def get_all_employees(db_name: str) -> list:
 
 temp_emps = [("12345678", "Jake Enoch", 5)]
 create_database(ldb)
-add_employee(temp_emps, ldb)
-get_all_employees(ldb)
-update_employee("12345678", ldb, ["John Enoch", 3])
-remove_employee("12345", ldb)
-remove_employee("12345678", ldb)
+
+db_conn = sqlite3.connect(ldb)
+db_cursor = db_conn.cursor()
+
+add_employee(db_cursor, temp_emps)
+print(get_all_employees(db_cursor))
+update_employee(db_cursor, "12345678", ("John Enoch", 3))
+print(get_all_employees(db_cursor))
+remove_employee(db_cursor, "12345678")
+
+db_conn.close()
 # remove_employee("12345678", "locker.db")'''

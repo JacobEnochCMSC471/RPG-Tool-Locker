@@ -30,17 +30,17 @@ class TestDatabaseFuncs(unittest.TestCase):
         test3 = \
             test_db_cursor.execute(
                 "SELECT count(*) from sqlite_master WHERE type='table' AND name='employees'"). \
-            fetchone()[0]
+                fetchone()[0]
 
         # Check that the table "items" was created successfully
         test4 = \
             test_db_cursor.execute("SELECT count(*) from sqlite_master WHERE type='table' AND name='items'"). \
-            fetchone()[0]
+                fetchone()[0]
 
         # Check that the table "locker_doors" was created successfully
         test5 = \
             test_db_cursor.execute("SELECT count(*) from sqlite_master WHERE type='table' AND name='locker_doors'"). \
-            fetchone()[0]
+                fetchone()[0]
 
         self.assertEqual(test3, 1, "Test3 Fail - Employees table not present.\n")
         self.assertEqual(test4, 1, "Test4 Fail - Items table not present.\n")
@@ -51,7 +51,7 @@ class TestDatabaseFuncs(unittest.TestCase):
         return
 
     def test_is_sql_db(self) -> None:
-        # This is here in case tearDown() deletes it before it can be accessed
+        # This is here in case tearDown() deletes it before it can be accessed for some reason
         locker_db.create_database("test.db")
 
         test1 = locker_db.isSqlite3Db("test.db")
@@ -60,13 +60,17 @@ class TestDatabaseFuncs(unittest.TestCase):
         self.assertEqual(test1, True, "Test1 Is_SQL_DB Fail")
         self.assertEqual(test2, False, "Test2 Is_SQL_DB Fail")
 
-    def tearDown(self) -> None:
+
+'''    def tearDown(self) -> None:
         # Delete the database file for teardown (if it exists)
         if os.path.exists("test.db"):
-            os.remove("test.db")
+            os.remove("test.db")'''
 
 
 class TestEmployeeCRUD(unittest.TestCase):
 
+    # Test a single insert + edge cases for an employee
     def test_insert_func_single(self):
+
+
         return
