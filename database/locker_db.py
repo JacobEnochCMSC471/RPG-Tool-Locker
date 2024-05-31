@@ -32,7 +32,9 @@ def isSqlite3Db(db: str) -> bool:
 
 def create_database(db_name: str) -> bool:
     try:
-        if isSqlite3Db(db_name):
+
+        # Check if the database file exists already
+        if os.path.isfile(db_name):
             return False
 
         # Connect to the SQLite database (or create it if it doesn't exist)
@@ -86,6 +88,19 @@ def create_database(db_name: str) -> bool:
         print("Fatal error has occurred! Check logs.")
         print(e)
         return False
+
+
+def wipe_table(db_name: str, table: str) -> None:
+    db_conn = sqlite3.connect(db_name)
+    db_cursor = db_conn.cursor()
+
+    db_cursor.execute(f'DELETE FROM {table}')
+    db_conn.commit()
+    db_conn.close()
+
+'''
+------------------------------EMPLOYEE CRUD FUNCTIONS------------------------------
+'''
 
 
 # Create a new employee and add it to the database
@@ -212,9 +227,13 @@ def get_all_employees(db_name: str) -> list:
 
     except Error as e:
         print("Error has occurred! Check logs for answers.")
-        print(e)
+
         return []
 
+
+'''
+------------------------------EMPLOYEE CRUD FUNCTIONS END------------------------------
+'''
 
 '''ldb = "locker.db"
 
