@@ -32,11 +32,6 @@ def isSqlite3Db(db: str) -> bool:
 
 def create_database(db_name: str) -> bool:
     try:
-
-        # Check if the database file exists already
-        if os.path.isfile(db_name):
-            return False
-
         # Connect to the SQLite database (or create it if it doesn't exist)
         conn = sqlite3.connect(db_name)
 
@@ -102,138 +97,6 @@ def wipe_table(db_name: str, table: str) -> None:
 '''
 ------------------------------EMPLOYEE CRUD FUNCTIONS------------------------------
 '''
-'''
-
-# Create a new employee and add it to the database
-def add_employee(list_of_employees: list, db_name: str) -> bool:
-    # Add items by using list of tuples [()], each individual tuple is one item
-    # Ex: [(12345, 'Jake Enoch', 4), (54321, 'Mark Treadwell', 7)]
-
-    try:
-        if isSqlite3Db(db_name):
-            db_conn = sqlite3.connect(db_name)
-            db_cursor = db_conn.cursor()
-
-            insert_statement = "INSERT INTO employees values(?,?,?)"
-
-            if len(list_of_employees) < 1 or len(list_of_employees[0]) == 0:
-                print("Attempting to add 0 items to database. Check syntax and try again.\n")
-                return False
-
-            elif len(list_of_employees) == 1:
-                db_cursor.execute(insert_statement, list_of_employees.pop())
-
-            else:
-                db_cursor.executemany(insert_statement, list_of_employees)
-
-            db_conn.commit()
-            db_conn.close()
-
-            return True
-
-        else:
-            print("Existing database not found. Initialize databases before attempting to modify them.\n")
-            return False
-
-    except Error as e:
-        print(e)
-        return False
-
-
-def remove_employee(emp_id: str, db_name: str) -> bool:
-    try:
-        if isSqlite3Db(db_name):
-            # Create a connection + cursor
-            db_conn = sqlite3.connect(db_name)
-            db_cursor = db_conn.cursor()
-
-            # Define the SQL delete statement
-            delete_statement = 'DELETE FROM employees WHERE id = ?'
-
-            # Execute the command with the supplied user_id
-            db_cursor.execute(delete_statement, (emp_id,))
-
-            # Commit the changes to the database + close the connection
-            db_conn.commit()
-            db_conn.close()
-
-            return True
-
-        else:
-            print("Existing database not found. Initialize databases before attempting to modify them.\n")
-            return False
-
-    except Error as e:
-        print("Error has occurred! Check logs for answers.")
-        print(e)
-        return False
-
-
-# new_details has format [name, perm_level]
-def update_employee(emp_id: str, db_name: str, new_details: list) -> bool:
-    try:
-        if isSqlite3Db(db_name):
-            # Create a connection + cursor
-            db_conn = sqlite3.connect(db_name)
-            db_cursor = db_conn.cursor()
-
-            # Define the SQL delete statement
-            exec_statement_name = 'UPDATE employees SET name = ? WHERE id = ?'
-            exec_statement_perm = 'UPDATE employees SET max_perm_level = ? WHERE id = ?'
-
-            # Execute the command with the supplied user_id
-            print(new_details[0])
-            db_cursor.execute(exec_statement_name, (new_details[0], emp_id))
-            db_cursor.execute(exec_statement_perm, (new_details[1], emp_id))
-
-            # Commit the changes to the database + close the connection
-            db_conn.commit()
-            db_conn.close()
-
-            return True
-
-        else:
-            print("Existing database not found. Initialize databases before attempting to modify them.\n")
-            return False
-
-    except Error as e:
-        print("Error has occurred! Check logs for answers.")
-        print(e)
-        return False
-
-
-def get_employee(db_name: str, emp_id: str) -> tuple:
-    return ()
-
-
-# Utility function to retrieve all employees from the table
-def get_all_employees(db_name: str) -> list:
-    try:
-        if isSqlite3Db(db_name):
-            # Create a connection + cursor
-            db_conn = sqlite3.connect(db_name)
-            db_cursor = db_conn.cursor()
-
-            # Define the SQL delete statement
-            select_statement = 'SELECT * FROM employees'
-
-            # Execute the command with the supplied user_id
-            search_res = db_cursor.execute(select_statement).fetchall()
-
-            # Commit the changes to the database + close the connection
-            db_conn.commit()
-            db_conn.close()
-
-            return search_res
-
-        else:
-            print("Existing database not found. Initialize databases before attempting to modify them.\n")
-            return []
-
-    except Error as e:
-        print("Error has occurred! Check logs for answers.")
-
-        return []'''
 
 
 def add_employee(cursor: sqlite3.Cursor, list_of_employees: list) -> bool:
@@ -246,10 +109,24 @@ def add_employee(cursor: sqlite3.Cursor, list_of_employees: list) -> bool:
             print("Attempting to add 0 items to database. Check syntax and try again.\n")
             return False
 
-        elif len(list_of_employees) == 1:
-            cursor.execute(insert_statement, list_of_employees.pop())
-        else:
-            cursor.executemany(insert_statement, list_of_employees)
+        count = 1
+
+        for employee in list_of_employees:
+
+            # Short-circuit evaluation instead of using ANDs
+            if type(employee[0]) != str or type(employee[1]) != str or type(employee[2]) != int:
+                error_msg = "Employee #{} is not formatted correctly. Correct Format is (id (string), name (string), " \
+                            "perm_level (int)".format(count)
+
+                print(error_msg)
+                print("No employees added.")
+
+                cursor.connection.rollback()
+
+                return False
+
+            cursor.execute(insert_statement, employee)
+            count += 1
 
         cursor.connection.commit()
         return True
@@ -301,7 +178,12 @@ def get_employee(cursor: sqlite3.Cursor, emp_id: str) -> tuple:
     try:
         select_statement = 'SELECT * FROM employees WHERE id = ?'
         cursor.execute(select_statement, (emp_id,))
-        return cursor.fetchone()
+        search_res = cursor.fetchone()
+
+        if search_res is None:
+            print("Employee with ID: {} not found!".format(emp_id))
+
+        return search_res
 
     except Error as e:
         print("Error has occurred! Check logs for answers.")
@@ -334,6 +216,7 @@ db_cursor = db_conn.cursor()
 
 add_employee(db_cursor, temp_emps)
 print(get_all_employees(db_cursor))
+print(get_employee(db_cursor, "123"))
 update_employee(db_cursor, "12345678", ("John Enoch", 3))
 print(get_all_employees(db_cursor))
 remove_employee(db_cursor, "12345678")
