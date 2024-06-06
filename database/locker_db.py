@@ -138,17 +138,32 @@ def add_employee(cursor: sqlite3.Cursor, list_of_employees: list) -> bool:
 
 def remove_employee(cursor: sqlite3.Cursor, emp_id: str) -> bool:
     try:
+
+        # Make sure that the emp_id is a string
+        if type(emp_id) is not str:
+            err_msg = "ID is {} when it should be type string. Check formatting and try again.".format(type(emp_id))
+            print(err_msg)
+            return False
+
         # Define the SQL delete statement
         delete_statement = 'DELETE FROM employees WHERE id = ?'
 
         # Execute the command with the supplied user_id
-        cursor.execute(delete_statement, (emp_id,))
+        res = cursor.execute(delete_statement, (emp_id,))
 
         # Commit the changes to the database
         cursor.connection.commit()
+
+        if res.rowcount == 0:
+            err_msg = "Employee with ID {} not found! Delete was not performed.".format(emp_id)
+            print(err_msg)
+
+
+
         return True
 
     except Error as e:
+        cursor.connection.rollback()
         print("Error has occurred! Check logs for answers.")
         print(e)
         return False

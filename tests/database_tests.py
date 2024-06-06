@@ -11,7 +11,7 @@ class TestDatabaseFuncs(unittest.TestCase):
     # Unit Test to test that the database and tables are being created correctly.
 
     def test_create_db(self) -> None:
-        # Create a brand new locker DB file using SQLite3
+        # Create a brand-new locker DB file using SQLite3
         test1 = locker_db.create_database("test.db")
 
         # Attempt to create a duplicate DB with the same name
@@ -75,7 +75,7 @@ class TestEmployeeCRUD(unittest.TestCase):
     db_cursor = db_conn.cursor()
 
     # Test a single insert + edge cases for an employee
-    def test_insert_func_single_correct(self):
+    def test_insert_func_single_correct(self)-> None:
         single_insert_correct = [("12345", "Jake Enoch", 5)]
 
         test8 = locker_db.add_employee(self.db_cursor, single_insert_correct)
@@ -87,7 +87,7 @@ class TestEmployeeCRUD(unittest.TestCase):
         self.assertEqual([('123', 'John Enoch', 4), ('124', 'Nick Enoch', 3), ('12345', 'Jake Enoch', 5)], test9,
                          "Test9 Failed: Single Insert Correct")
 
-    def test_insert_func_single_incorrect(self):
+    def test_insert_func_single_incorrect(self)-> None:
         single_insert_incorrect = [(12345, "Jake Enoch", 5)]
 
         test10 = locker_db.add_employee(self.db_cursor, single_insert_incorrect)
@@ -98,7 +98,7 @@ class TestEmployeeCRUD(unittest.TestCase):
         self.assertEqual([('123', 'John Enoch', 4), ('124', 'Nick Enoch', 3), ('12345', 'Jake Enoch', 5)], test11,
                          "Test11 Failed: Single Insert Incorrect")
 
-    def test_insert_func_multiple_correct(self):
+    def test_insert_func_multiple_correct(self)-> None:
         multiple_insert_correct = [("123", "John Enoch", 4), ("124", "Nick Enoch", 3)]
 
         test12 = locker_db.add_employee(self.db_cursor, multiple_insert_correct)
@@ -110,7 +110,7 @@ class TestEmployeeCRUD(unittest.TestCase):
         self.assertListEqual([("123", "John Enoch", 4), ("124", "Nick Enoch", 3)], test13,
                              "Test13 Failed: Multi Insert")
 
-    def test_multi_insert_multiple_incorrect(self):
+    def test_multi_insert_multiple_incorrect(self)-> None:
         multiple_insert_incorrect = [("125", "Thomas Saddler", "4"), ("126", "Nick Enoch", 3)]
 
         test14 = locker_db.add_employee(self.db_cursor, multiple_insert_incorrect)
@@ -122,8 +122,25 @@ class TestEmployeeCRUD(unittest.TestCase):
         self.assertListEqual([('123', 'John Enoch', 4), ('124', 'Nick Enoch', 3), ('12345', 'Jake Enoch', 5)], test15,
                              "Test15 Failed: Multi Insert Incorrect")
 
-    def test_delete_existing_employee(self):
-        return
+    def test_delete_existing_employee_correct(self) -> None:
+        test16 = locker_db.remove_employee(self.db_cursor, "123")
+
+        test17 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
+
+        self.assertEqual(True, test16, "Test16 Failed: Remove Existing Employee Return Value")
+
+        self.assertListEqual([('124', 'Nick Enoch', 3), ('12345', 'Jake Enoch', 5)], test17, "Test17 Failed: Remove "
+                                                                                             "Existing Employee")
+
+    def test_delete_existing_employee_incorrect(self) -> None:
+        test18 = locker_db.remove_employee(self.db_cursor, 124)
+
+        test19 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
+
+        self.assertEqual(False, )
+
+
+
 
 
 
