@@ -151,15 +151,15 @@ def remove_employee(cursor: sqlite3.Cursor, emp_id: str) -> bool:
         # Execute the command with the supplied user_id
         res = cursor.execute(delete_statement, (emp_id,))
 
-        # Commit the changes to the database
-        cursor.connection.commit()
-
+        # Print a message and return false if the ID was not found
         if res.rowcount == 0:
             err_msg = "Employee with ID {} not found! Delete was not performed.".format(emp_id)
+            # No commit is needed here since nothing changed in the database
             print(err_msg)
+            return False
 
-
-
+        # Commit the changes to the database
+        cursor.connection.commit()
         return True
 
     except Error as e:
