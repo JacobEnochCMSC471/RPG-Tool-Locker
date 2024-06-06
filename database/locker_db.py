@@ -162,7 +162,7 @@ def remove_employee(cursor: sqlite3.Cursor, emp_id: str) -> bool:
         cursor.connection.commit()
         return True
 
-    except Error as e:
+    except sqlite3.Error as e:
         cursor.connection.rollback()
         print("Error has occurred! Check logs for answers.")
         print(e)
@@ -171,19 +171,23 @@ def remove_employee(cursor: sqlite3.Cursor, emp_id: str) -> bool:
 
 def update_employee(cursor: sqlite3.Cursor, emp_id: str, new_details: tuple) -> bool:
     try:
+        # Short-circuit evaluation - avoid using ANDs when possible
+        if type(new_details[0]) is not type(str) or type(new_details[1]) is not type(int) or len(new_details) != 2:
+            err_msg = "Employee with ID {} not updated! Use a tuple with types (str, int) to update employee!".format(emp_id)
+            print(err_msg)
+            return False
+
         # Define the SQL update statements
-        exec_statement_name = 'UPDATE employees SET name = ? WHERE id = ?'
-        exec_statement_perm = 'UPDATE employees SET max_perm_level = ? WHERE id = ?'
+        exec_statement = 'UPDATE employees SET name = ?, max_perm_level = ? WHERE id = ?'
 
         # Execute the commands with the supplied user_id
-        cursor.execute(exec_statement_name, (new_details[0], emp_id))
-        cursor.execute(exec_statement_perm, (new_details[1], emp_id))
+        cursor.execute(exec_statement, (new_details[0], new_details[1], emp_id))
 
         # Commit the changes to the database
         cursor.connection.commit()
         return True
 
-    except Error as e:
+    except sqlite3.Error as e:
         print("Error has occurred! Check logs for answers.")
         print(e)
         return False
@@ -200,7 +204,7 @@ def get_employee(cursor: sqlite3.Cursor, emp_id: str) -> tuple:
 
         return search_res
 
-    except Error as e:
+    except sqlite3.Error as e:
         print("Error has occurred! Check logs for answers.")
         print(e)
         return ()
@@ -211,7 +215,7 @@ def get_all_employees(cursor: sqlite3.Cursor) -> list:
         select_statement = 'SELECT * FROM employees'
         return cursor.execute(select_statement).fetchall()
 
-    except Error as e:
+    except sqlite3.Error as e:
         print("Error has occurred! Check logs for answers.")
         print(e)
         return []
