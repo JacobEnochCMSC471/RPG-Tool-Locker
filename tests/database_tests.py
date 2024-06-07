@@ -84,8 +84,7 @@ class TestEmployeeCRUD(unittest.TestCase):
 
         self.assertEqual(True, test8, "Test8 Failed: Single Insert Correct True Return")
 
-        self.assertEqual([('123', 'John Enoch', 4), ('124', 'Nick Enoch', 3), ('12345', 'Jake Enoch', 5)], test9,
-                         "Test9 Failed: Single Insert Correct")
+        self.assertListEqual([('12345', 'Jake Enoch', 5)], test9, "Test9 Failed: Single Insert Correct")
 
     def test_insert_func_single_incorrect(self) -> None:
         single_insert_incorrect = [(12345, "Jake Enoch", 5)]
@@ -95,66 +94,93 @@ class TestEmployeeCRUD(unittest.TestCase):
         test11 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
 
         self.assertEqual(False, test10, "Test 10 Failed: Single Insert Incorrect False Return")
-        self.assertEqual([('123', 'John Enoch', 4), ('124', 'Nick Enoch', 3), ('12345', 'Jake Enoch', 5)], test11,
+        self.assertEqual([('12345', 'Jake Enoch', 5)], test11,
                          "Test11 Failed: Single Insert Incorrect")
 
     def test_insert_func_multiple_correct(self) -> None:
         multiple_insert_correct = [("123", "John Enoch", 4), ("124", "Nick Enoch", 3)]
 
-        test12 = locker_db.add_employee(self.db_cursor, multiple_insert_correct)
+        test12 = locker_db.add_employee(cursor=self.db_cursor, list_of_employees=multiple_insert_correct)
 
         test13 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
 
         self.assertEqual(True, test12, "Test12 Failed: Multi Insert True Return")
 
-        self.assertListEqual([("123", "John Enoch", 4), ("124", "Nick Enoch", 3)], test13,
+        self.assertListEqual([('12345', 'Jake Enoch', 5), ("123", "John Enoch", 4), ("124", "Nick Enoch", 3)], test13,
                              "Test13 Failed: Multi Insert")
 
     def test_multi_insert_multiple_incorrect(self) -> None:
         multiple_insert_incorrect = [("125", "Thomas Saddler", "4"), ("126", "Nick Enoch", 3)]
 
-        test14 = locker_db.add_employee(self.db_cursor, multiple_insert_incorrect)
+        test14 = locker_db.add_employee(cursor=self.db_cursor, list_of_employees=multiple_insert_incorrect)
 
         test15 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
 
         self.assertEqual(False, test14, "Test14 Failed: Multi Insert Incorrect False Return")
 
-        self.assertListEqual([('123', 'John Enoch', 4), ('124', 'Nick Enoch', 3), ('12345', 'Jake Enoch', 5)], test15,
+        self.assertListEqual([('12345', 'Jake Enoch', 5), ('123', 'John Enoch', 4), ('124', 'Nick Enoch', 3)], test15,
                              "Test15 Failed: Multi Insert Incorrect")
 
     def test_delete_existing_employee_correct(self) -> None:
-        test16 = locker_db.remove_employee(self.db_cursor, "123")
+        test16 = locker_db.remove_employee(cursor=self.db_cursor, emp_id="123")
 
         test17 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
 
         self.assertEqual(True, test16, "Test16 Failed: Remove Existing Employee Return Value")
 
-        self.assertListEqual([('124', 'Nick Enoch', 3), ('12345', 'Jake Enoch', 5)], test17, "Test17 Failed: Remove "
+        self.assertListEqual([('12345', 'Jake Enoch', 5), ('124', 'Nick Enoch', 3)], test17, "Test17 Failed: Remove "
                                                                                              "Existing Employee")
 
     def test_delete_existing_employee_incorrect(self) -> None:
-        test18 = locker_db.remove_employee(self.db_cursor, 124)
+        # This is supposed to be incorrect - ignore warning
+        test18 = locker_db.remove_employee(cursor=self.db_cursor, emp_id=124)
 
         test19 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
 
         self.assertEqual(False, test18, "Test18 Failed: Remove Existing Employee Incorrect Format Return Value")
 
-        self.assertListEqual([('124', 'Nick Enoch', 3), ('12345', 'Jake Enoch', 5)], test19, "Test19 Failed: Remove "
+        self.assertListEqual([('12345', 'Jake Enoch', 5), ('124', 'Nick Enoch', 3)], test19, "Test19 Failed: Remove "
                                                                                              "Existing Employee Wrong "
                                                                                              "Type")
 
     def test_delete_nonexistent_employee(self) -> None:
-        test20 = locker_db.remove_employee(self.db_cursor, "123456789")
+        test20 = locker_db.remove_employee(cursor=self.db_cursor, emp_id="123456789")
 
         test21 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
 
         self.assertEqual(False, test20, "Test20 Fail: Remove Nonexistent Employee Return Value")
 
-        self.assertListEqual([('124', 'Nick Enoch', 3), ('12345', 'Jake Enoch', 5)], test21, "Test21 Fail: Remove "
+        self.assertListEqual([('12345', 'Jake Enoch', 5), ('124', 'Nick Enoch', 3)], test21, "Test21 Fail: Remove "
                                                                                              "Nonexistent Employee")
 
     def test_update_employee_correct(self) -> None:
-        test22 = locker_db.update_employee(self.db_cursor, "124", ("Dave Enoch", 5))
-        test23 = test21 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
+        test22 = locker_db.update_employee(cursor=self.db_cursor, emp_id="124", new_details=("Dave Enoch", 5))
 
+        test23 = self.db_cursor.execute("SELECT * FROM employees WHERE id = 124").fetchall()
 
+        self.assertEqual(True, test22, "Test22 Fail: Update Employee Correct Return Value")
+
+        self.assertListEqual([("124", "Dave Enoch", 5)], test23,
+                             "Test23 Fail: Update Employee Check")
+
+    def test_update_employee_incorrect(self) -> None:
+        # (name, perm_level) is correct formatting
+        incorrect_update = (4, "Paul Enoch")
+
+        test24 = locker_db.update_employee(cursor=self.db_cursor, emp_id="12345", new_details=incorrect_update)
+
+        test25 = self.db_cursor.execute("SELECT * FROM employees WHERE id = 12345").fetchall()
+
+        self.assertEqual(False, test24, "Test24 Failed: Incorrect Update Return Value")
+
+        self.assertListEqual([("12345", "Jake Enoch", 5)], test25, "Test25 Failed: Incorrect Update")
+
+        incorrect_update = ("Paul Enoch", 4, "This should not be here")
+
+        test26 = locker_db.update_employee(cursor=self.db_cursor, emp_id="12345", new_details=incorrect_update)
+
+        test27 = self.db_cursor.execute("SELECT * FROM employees WHERE id = 12345").fetchall()
+
+        self.assertEqual(False, test26, "Test26 Fail: Incorrect Update Return Value, 3 parameters")
+
+        self.assertListEqual([("12345", "Jake Enoch", 5)], test27, "Test27 Fail: Incorrect Update 3 Parameters")

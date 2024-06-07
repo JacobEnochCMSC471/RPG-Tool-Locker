@@ -146,7 +146,7 @@ def remove_employee(cursor: sqlite3.Cursor, emp_id: str) -> bool:
             return False
 
         # Define the SQL delete statement
-        delete_statement = 'DELETE FROM employees WHERE id = ?'
+        delete_statement = "DELETE FROM employees WHERE id = ?"
 
         # Execute the command with the supplied user_id
         res = cursor.execute(delete_statement, (emp_id,))
@@ -171,14 +171,23 @@ def remove_employee(cursor: sqlite3.Cursor, emp_id: str) -> bool:
 
 def update_employee(cursor: sqlite3.Cursor, emp_id: str, new_details: tuple) -> bool:
     try:
-        # Short-circuit evaluation - avoid using ANDs when possible
-        if type(new_details[0]) is not type(str) or type(new_details[1]) is not type(int) or len(new_details) != 2:
+        if type(new_details[0]) is not str or type(new_details[1]) is not int or len(new_details) != 2:
             err_msg = "Employee with ID {} not updated! Use a tuple with types (str, int) to update employee!".format(emp_id)
             print(err_msg)
             return False
 
+        # Search for the employee and verify that it exists before trying to update
+        search_emp_statement = "SELECT * FROM employees WHERE id = ?"
+
+        search_res = cursor.execute(search_emp_statement, (emp_id,))
+
+        # If the employee doesn't exist, print msg and return False
+        if search_res.fetchone() is None:
+            err_msg = "Employee with ID {} not found! Only attempt to update employees that exist!".format(emp_id)
+            return False
+
         # Define the SQL update statements
-        exec_statement = 'UPDATE employees SET name = ?, max_perm_level = ? WHERE id = ?'
+        exec_statement = "UPDATE employees SET name = ?, max_perm_level = ? WHERE id = ?"
 
         # Execute the commands with the supplied user_id
         cursor.execute(exec_statement, (new_details[0], new_details[1], emp_id))
@@ -195,7 +204,8 @@ def update_employee(cursor: sqlite3.Cursor, emp_id: str, new_details: tuple) -> 
 
 def get_employee(cursor: sqlite3.Cursor, emp_id: str) -> tuple:
     try:
-        select_statement = 'SELECT * FROM employees WHERE id = ?'
+        select_statement = "SELECT * FROM employees WHERE id = ?"
+
         cursor.execute(select_statement, (emp_id,))
         search_res = cursor.fetchone()
 
