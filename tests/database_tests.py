@@ -184,3 +184,22 @@ class TestEmployeeCRUD(unittest.TestCase):
         self.assertEqual(False, test26, "Test26 Fail: Incorrect Update Return Value, 3 parameters")
 
         self.assertListEqual([("12345", "Jake Enoch", 5)], test27, "Test27 Fail: Incorrect Update 3 Parameters")
+
+    def test_get_employee_exists(self)-> None:
+        test28 = locker_db.get_employee(cursor=self.db_cursor, emp_id="12345")
+
+        self.assertEqual(('12345', 'Jake Enoch', 5), test28, "Test28 Failed: Get Employee (Exists)")
+
+    def test_get_employee_dne(self)-> None:
+        test29 = locker_db.get_employee(cursor=self.db_cursor, emp_id="007")
+
+        self.assertEqual(None, test29, "Test29 Failed: Get Employee (does not exist)")
+
+    def test_get_all_employees(self) -> None:
+        test30 = locker_db.get_all_employees(self.db_cursor)
+
+        self.assertListEqual([("12345", "Jake Enoch", 5), ("124", "Dave Enoch", 5)], test30, "Test30 Failed: Get All "
+                                                                                             "Employees Return")
+# Make future tests fully independent of one another even if it's going to take longer to write tests
+# Unit tests shouldn't rely on anything outside the test to run
+# Maybe have a setup function that instantiates everything for you and a teardown that removes these items from the DB

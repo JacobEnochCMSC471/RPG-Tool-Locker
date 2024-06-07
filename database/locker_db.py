@@ -114,7 +114,7 @@ def add_employee(cursor: sqlite3.Cursor, list_of_employees: list) -> bool:
         for employee in list_of_employees:
 
             # Short-circuit evaluation instead of using ANDs
-            if type(employee[0]) != str or type(employee[1]) != str or type(employee[2]) != int:
+            if type(employee[0]) != str or type(employee[1]) != str or type(employee[2]) != int or len(employee) != 3:
                 error_msg = "Employee #{} is not formatted correctly. Correct Format is (id (string), name (string), " \
                             "perm_level (int)".format(count)
 
