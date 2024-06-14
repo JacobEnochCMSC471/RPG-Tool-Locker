@@ -3,3 +3,4 @@
 /tests/test.db
 /tests/database.log
 /database/database.log
+/tests/new_database_tests.py

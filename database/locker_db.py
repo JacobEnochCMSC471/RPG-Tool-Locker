@@ -172,7 +172,8 @@ def remove_employee(cursor: sqlite3.Cursor, emp_id: str) -> bool:
 def update_employee(cursor: sqlite3.Cursor, emp_id: str, new_details: tuple) -> bool:
     try:
         if type(new_details[0]) is not str or type(new_details[1]) is not int or len(new_details) != 2:
-            err_msg = "Employee with ID {} not updated! Use a tuple with types (str, int) to update employee!".format(emp_id)
+            err_msg = "Employee with ID {} not updated! Use a tuple with types (str, int) to update employee!".format(
+                emp_id)
             print(err_msg)
             return False
 
@@ -235,11 +236,62 @@ def get_all_employees(cursor: sqlite3.Cursor) -> list:
 ------------------------------EMPLOYEE CRUD FUNCTIONS END------------------------------
 '''
 
-'''ldb = "locker.db"
+'''
+------------------------------ITEM CRUD FUNCTIONS BEGIN------------------------------
+'''
+
+
+def add_item(cursor: sqlite3.Cursor, list_of_items: list) -> bool:
+    return True
+
+
+def remove_item(cursor: sqlite3.Cursor, item_id: str) -> bool:
+    return True
+
+
+def update_item(cursor: sqlite3.Cursor, item_id: str, new_details: tuple) -> bool:
+    return True
+
+
+def get_item(cursor: sqlite3.Cursor, item_id: str) -> tuple:
+    try:
+        select_statement = "SELECT * FROM items WHERE id = ?"
+
+        cursor.execute(select_statement, (item_id,))
+        search_res = cursor.fetchone()
+
+        if search_res is None:
+            print("Item with ID: {} not found!".format(item_id))
+
+        return search_res
+
+    except sqlite3.Error as e:
+        print("Error has occurred! Check logs for answers.")
+        print(e)
+        return ()
+
+
+def get_all_items(cursor: sqlite3.Cursor) -> list:
+    try:
+        select_statement = 'SELECT * FROM items'
+        return cursor.execute(select_statement).fetchall()
+
+    except sqlite3.Error as e:
+        print("Error has occurred! Check logs for answers.")
+        print(e)
+        return []
+
+
+'''
+------------------------------ITEM CRUD FUNCTIONS END------------------------------
+'''
+
+ldb = "locker.db"
 
 temp_emps = [("12345678", "Jake Enoch", 5)]
 create_database(ldb)
 
+'''
 db_conn = sqlite3.connect(ldb)
 db_cursor = db_conn.cursor()
 
