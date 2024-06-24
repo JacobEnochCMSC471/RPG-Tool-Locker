@@ -3,7 +3,6 @@ import sqlite3
 import os
 from database import locker_db
 
-
 class TestDatabaseFuncs(unittest.TestCase):
     def setUp(self) -> None:
         # Ensure there is no leftover test database file
@@ -228,3 +227,66 @@ class TestItemCRUD(unittest.TestCase):
         self.db_conn.close()
         if os.path.exists("test.db"):
             os.remove("test.db")
+
+    def test_add_single_item_correct(self) -> None:
+        items_to_add = [("TL001", "Flathead Screwdriver", "6in length", 0, "001", 1)]
+
+        test31 = locker_db.add_item(cursor=self.db_cursor, list_of_items=items_to_add)
+
+        test32 = self.db_cursor.execute("SELECT * FROM items").fetchall()
+
+        self.assertEqual(True, test31, "Test 31 Failed - Single Insert Return Value")
+
+        self.assertListEqual(items_to_add, test32, "Test 32 Failed - Single Insert")
+
+    def test_add_single_item_incorrect(self) -> None:
+        # Test to make sure we catch all possible type errors when a new item is being added
+
+        items_to_add1 = [(1, "Flathead Screwdriver", "6in length", 0, "001", 1)]
+        items_to_add2 = [("TL001", 1, "6in length", 0, "001", 1)]
+        items_to_add3 = [("TL001", "Flathead Screwdriver", 1, 0, "001", 1)]
+        items_to_add4 = [("TL001", "Flathead Screwdriver", "6in length", "0", "001", 1)]
+        items_to_add5 = [("TL001", "Flathead Screwdriver", "6in length", 0, 1, 1)]
+        items_to_add6 = [("TL001", "Flathead Screwdriver", "6in length", 0, "001", "1")]
+
+        items_list = [items_to_add1, items_to_add2, items_to_add3, items_to_add4, items_to_add5, items_to_add6]
+
+        counter = 33
+
+        for item in items_list:
+            curr_test_return = locker_db.add_item(self.db_cursor, list_of_items=item)
+            curr_test_retrieve = self.db_cursor.execute("SELECT * FROM items").fetchall()
+
+            self.assertEqual(False, curr_test_return, f"Test {counter} Failed - Bad Insert Return Value")
+
+            counter += 1
+
+            self.assertListEqual([], curr_test_retrieve, f"Test {counter} Failed - Bad Single Insert")
+
+            counter += 1
+
+        print(f"Test Counter: {counter}")
+
+    def test_empty_insert(self) -> None:
+        counter = 46
+
+        # Test whether these empty lists/tuples can be added to the item table
+        item_to_insert1 = []
+        item_to_insert2 = [()]
+        item_to_insert3 = ()
+
+        item_list = [item_to_insert1, item_to_insert2, item_to_insert3]
+
+        for item in item_list:
+            curr_test_return = locker_db.add_item(cursor=self.db_cursor, list_of_items=item_list)
+            curr_test_retrieve = self.db_cursor.execute("SELECT * FROM items").fetchall()
+
+            self.assertEqual(False, curr_test_return, f"Test {counter} Failed - Empty Insert Return Value")
+
+            counter += 1
+
+            self.assertListEqual([], curr_test_retrieve, f"Test {counter} Failed - Empty Insert")
+
+            counter += 1
+
+            print(counter)

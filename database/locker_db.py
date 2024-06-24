@@ -113,9 +113,10 @@ def add_employee(cursor: sqlite3.Cursor, list_of_employees: list) -> bool:
 
         for employee in list_of_employees:
 
-            if type(employee[0]) != str or type(employee[1]) != str or type(employee[2]) != int or len(employee) != 3:
-                error_msg = "Employee #{} is not formatted correctly. Correct Format is (id (string), name (string), " \
-                            "perm_level (int))".format(count)
+            if not (isinstance(employee[0], str) and isinstance(employee[1], str) and isinstance(employee[2], int) and
+                    len(employee) == 3):
+                error_msg = f"Employee #{count} is not formatted correctly. Correct Format is (id (string), " \
+                            "name (string) perm_level (int))"
 
                 print(error_msg)
                 print("No employees added.")
@@ -139,8 +140,8 @@ def remove_employee(cursor: sqlite3.Cursor, emp_id: str) -> bool:
     try:
 
         # Make sure that the emp_id is a string
-        if type(emp_id) is not str:
-            err_msg = "ID is {} when it should be type string. Check formatting and try again.".format(type(emp_id))
+        if not isinstance(emp_id, str):
+            err_msg = f"ID is {type(emp_id)} when it should be type string. Check formatting and try again."
             print(err_msg)
             return False
 
@@ -152,7 +153,7 @@ def remove_employee(cursor: sqlite3.Cursor, emp_id: str) -> bool:
 
         # Print a message and return false if the ID was not found
         if res.rowcount == 0:
-            err_msg = "Employee with ID {} not found! Delete was not performed.".format(emp_id)
+            err_msg = f"Employee with ID {emp_id} not found! Delete was not performed."
             # No commit is needed here since nothing changed in the database
             print(err_msg)
             return False
@@ -169,9 +170,8 @@ def remove_employee(cursor: sqlite3.Cursor, emp_id: str) -> bool:
 
 def update_employee(cursor: sqlite3.Cursor, emp_id: str, new_details: tuple) -> bool:
     try:
-        if type(new_details[0]) is not str or type(new_details[1]) is not int or len(new_details) != 2:
-            err_msg = "Employee with ID {} not updated! Use a tuple with types (str, int) to update employee!".format(
-                emp_id)
+        if not (isinstance(new_details[0], str) and isinstance(new_details[1], int) and len(new_details) == 2):
+            err_msg = f"Employee with ID {emp_id} not updated! Use a tuple with types (str, int) to update employee!"
             print(err_msg)
             return False
 
@@ -182,7 +182,7 @@ def update_employee(cursor: sqlite3.Cursor, emp_id: str, new_details: tuple) -> 
 
         # If the employee doesn't exist, print msg and return False
         if search_res.fetchone() is None:
-            err_msg = "Employee with ID " + emp_id + "was not found! Only attempt to update employees that exist!"
+            err_msg = f"Employee with ID {emp_id} was not found! Only attempt to update employees that exist!"
             print(err_msg)
             return False
 
@@ -211,7 +211,7 @@ def get_employee(cursor: sqlite3.Cursor, emp_id: str) -> tuple:
         search_res = cursor.fetchone()
 
         if search_res is None:
-            print("Employee with ID: {} not found!".format(emp_id))
+            print(f"Employee with ID: {emp_id} not found!")
 
         return search_res
 
@@ -252,11 +252,16 @@ def add_item(cursor: sqlite3.Cursor, list_of_items: list) -> bool:
 
         count = 1
 
-        err_msg = "Incorrect formatting for item {}. Check formatting is (str, str, str, int, str, int)!"
-
         for item in list_of_items:
+
+            if len(item) == 0:
+                print("Attempting to add empty item to table. Check syntax and try again!")
+                return False
+
+            err_msg = f"Incorrect formatting for item {count}. Check formatting is (str, str, str, int, str, int)!"
+
             if len(item) != 6:
-                print(err_msg.format(count))
+                print(err_msg)
                 return False
 
             for number in range(6):
@@ -283,7 +288,7 @@ def add_item(cursor: sqlite3.Cursor, list_of_items: list) -> bool:
 def remove_item(cursor: sqlite3.Cursor, item_id: str) -> bool:
     try:
         if not isinstance(item_id, str):
-            err_msg = "Item ID {} is type " + str(
+            err_msg = f"Item ID {item_id} is type " + str(
                 type(item_id)) + " when it should be type string. Check formatting and try again."
             print(err_msg)
             return False
@@ -293,13 +298,13 @@ def remove_item(cursor: sqlite3.Cursor, item_id: str) -> bool:
         res = cursor.execute(delete_statement, (item_id,))
 
         if res.rowcount == 0:
-            err_msg = "Item with ID " + item_id + " not found! Delete was not performed."
+            err_msg = f"Item with ID {item_id} not found! Delete was not performed."
             print(err_msg)
 
         cursor.connection.commit()
 
     except sqlite3.Error as e:
-        print("Error has occured! Check logs for answers.")
+        print("Error has occurred! Check logs for answers.")
         print(e)
         return False
 
@@ -307,6 +312,37 @@ def remove_item(cursor: sqlite3.Cursor, item_id: str) -> bool:
 
 
 def update_item(cursor: sqlite3.Cursor, item_id: str, new_details: tuple) -> bool:
+    try:
+        if (not isinstance(new_details[0], str) or
+                not isinstance(new_details[1], str) or
+                not isinstance(new_details[2], int) or
+                not isinstance(new_details[3], str) or
+                not isinstance(new_details[4], int)):
+            print("Item with ID {item_id} not updated! Use a tuple with types (str, str, int, str, str) to update!")
+            return False
+
+        search_item_statement = "SELECT * FROM items WHERE item_id = ?"
+
+        search_res = cursor.execute(search_item_statement, (item_id,))
+
+        if search_res.fetchone() is None:
+            err_msg = f"Item with ID {item_id} not found! Only attempt to update items that exist!"
+            print(err_msg)
+            return False
+
+        exec_statement = "UPDATE items SET name = ?, description = ?, min_perm_level = ?, borrowed_by = ?, locker_number = ? WHERE item_id = ?"
+
+        cursor.execute(exec_statement,
+                       (new_details[0], new_details[1], new_details[2], new_details[3], new_details[4], item_id))
+
+        cursor.connection.commit()
+
+    except sqlite3.Error as e:
+        print("Error has occurred! Check logs for answers.")
+        print(e)
+
+        return False
+
     return True
 
 
@@ -343,14 +379,20 @@ def get_all_items(cursor: sqlite3.Cursor) -> list:
 ------------------------------ITEM CRUD FUNCTIONS END------------------------------
 '''
 
-ldb = "locker.db"
+'''ldb = "locker.db"
 
 create_database(ldb)
 
 db_conn = sqlite3.connect(ldb)
 db_cursor = db_conn.cursor()
 
-add_item(cursor=db_cursor, list_of_items=[("TL001", "Phillips Head Screwdriver", "6 length", 0, "N/A", 1)])
+# add_item(cursor=db_cursor, list_of_items=[("TL001", "Phillips Head Screwdriver", "6 length", 0, "N/A", 1)])
+
+# remove_item(cursor=db_cursor, item_id="TL001")
+
+new_deets = ("Flathead screwdriver", "6in length", 0, "0000001", 1)
+
+update_item(cursor=db_cursor, item_id="TL001", new_details=new_deets)
 
 db_conn.close()
-# remove_employee("12345678", "locker.db")
+# remove_employee("12345678", "locker.db")'''
