@@ -288,8 +288,9 @@ def add_item(cursor: sqlite3.Cursor, list_of_items: list) -> bool:
 def remove_item(cursor: sqlite3.Cursor, item_id: str) -> bool:
     try:
         if not isinstance(item_id, str):
-            err_msg = f"Item ID {item_id} is type " + str(
-                type(item_id)) + " when it should be type string. Check formatting and try again."
+
+            item_id_type = str(type(item_id))
+            err_msg = f"Item ID {item_id} is type {item_id_type} when it should be type string. Check formatting and try again."
             print(err_msg)
             return False
 
