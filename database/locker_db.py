@@ -241,54 +241,47 @@ def get_all_employees(cursor: sqlite3.Cursor) -> list:
 '''
 
 
-def add_item(cursor: sqlite3.Cursor, list_of_items: list) -> bool:
+def add_item(cursor: sqlite3.Cursor, list_of_items: list[tuple[str, str, str, int, str, int]]) -> bool:
     try:
         if len(list_of_items) == 0:
-            err_msg = "Item list is empty! Ensure that you're adding items correctly!"
-            print(err_msg)
+            print("Item list is empty! Ensure that you're adding items correctly!")
             return False
 
         insert_statement = "INSERT INTO items VALUES (?, ?, ?, ?, ?, ?)"
-
         count = 1
 
         for item in list_of_items:
-
             if len(item) == 0:
                 print("Attempting to add empty item to table. Check syntax and try again!")
+                cursor.connection.rollback()
                 return False
-
-            err_msg = f"Incorrect formatting for item {count}. Check formatting is (str, str, str, int, str, int)!"
 
             if len(item) != 6:
-                print(err_msg)
+                print(f"Incorrect formatting for item {count}. Check formatting is (str, str, str, int, str, int)!")
+                cursor.connection.rollback()
                 return False
 
-            for number in range(6):
-                if (number == 3 or number == 5) and not isinstance(item[number], int):
-                    print(err_msg.format(count))
-                    return False
-
-                elif number in [0, 1, 2, 4] and not isinstance(item[number], str):
-                    print(err_msg.format(count))
-                    return False
+            if not (isinstance(item[0], str) and isinstance(item[1], str) and isinstance(item[2], str) and
+                    isinstance(item[3], int) and isinstance(item[4], str) and isinstance(item[5], int)):
+                print(f"Incorrect formatting for item {count}. Check formatting is (str, str, str, int, str, int)!")
+                cursor.connection.rollback()
+                return False
 
             cursor.execute(insert_statement, item)
-            cursor.connection.commit()
-
             count += 1
+
+        cursor.connection.commit()
+        return True
 
     except sqlite3.Error as e:
         print(e)
+        cursor.connection.rollback()
         return False
-
-    return True
 
 
 def remove_item(cursor: sqlite3.Cursor, item_id: str) -> bool:
     try:
         if not isinstance(item_id, str):
-
             item_id_type = str(type(item_id))
             err_msg = f"Item ID {item_id} is type {item_id_type} when it should be type string. Check formatting and try again."
             print(err_msg)

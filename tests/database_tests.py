@@ -351,3 +351,41 @@ class TestItemCRUD(unittest.TestCase):
             counter += 1
 
             print(counter)
+
+    def test_add_multiple_correct_items(self) -> None:
+        # Test adding multiple valid items to the database.
+        items_to_add = [
+            ("TL001", "Flathead Screwdriver", "6in length", 0, "001", 1),
+            ("TL002", "Phillips Screwdriver", "6in length", 0, "002", 2),
+            ("TL003", "Hammer", "16oz", 0, "003", 3)
+        ]
+
+        result = locker_db.add_item(cursor=self.db_cursor, list_of_items=items_to_add)
+        items_in_db = self.db_cursor.execute("SELECT * FROM items").fetchall()
+
+        self.assertTrue(result, "Test Failed - Multiple Insert Return Value")
+        self.assertListEqual(items_to_add, items_in_db, "Test Failed - Multiple Insert")
+
+    def test_add_mixed_valid_invalid_items(self) -> None:
+        # Test adding a mix of valid and invalid items to the database.
+        items_to_add = [
+            ("TL001", "Flathead Screwdriver", "6in length", 0, "001", 1),
+            ("TL002", "Phillips Screwdriver", 123, 0, "002", 2),  # Invalid item
+            ("TL003", "Hammer", "16oz", 0, "003", 3)
+        ]
+
+        result = locker_db.add_item(cursor=self.db_cursor, list_of_items=items_to_add)
+        items_in_db = self.db_cursor.execute("SELECT * FROM items").fetchall()
+
+        self.assertFalse(result, "Test Failed - Mixed Insert Return Value")
+        self.assertListEqual([], items_in_db, "Test Failed - Mixed Insert")
+
+    def test_sql_error_handling(self):
+        locker_db.add_item(self.db_cursor, [("TL001", "Flathead Screwdriver", "6in length", 0, "001", 1)])
+        items_to_add = [
+            ("TL001", "Duplicate ID", "6in length", 0, "001", 1)
+        ]
+        result = locker_db.add_item(cursor=self.db_cursor, list_of_items=items_to_add)
+        self.assertFalse(result, "Test Failed - SQL Error Handling")
+        items_in_db = self.db_cursor.execute("SELECT * FROM items").fetchall()
+        self.assertEqual(len(items_in_db), 1, "Test Failed - SQL Error Handling")
