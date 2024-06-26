@@ -4,3 +4,7 @@
 /tests/database.log
 /database/database.log
 /tests/new_database_tests.py
+/ui/learning_tkinter.py
+/ui/gpt_code.py
+/ui/test_db_ui.db
+/ui/database.log
