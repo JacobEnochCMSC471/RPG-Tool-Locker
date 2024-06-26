@@ -375,6 +375,15 @@ def get_all_items(cursor: sqlite3.Cursor) -> list:
         print(e)
         return []
 
+
 '''
 ------------------------------ITEM CRUD FUNCTIONS END------------------------------
 '''
+
+'''
+------------------------------LOCKER CRUD FUNCTIONS BEGIN------------------------------
+'''
+
+
+def add_locker():
+    return
