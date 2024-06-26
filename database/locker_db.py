@@ -267,6 +267,8 @@ def add_item(cursor: sqlite3.Cursor, list_of_items: list[tuple[str, str, str, in
                 cursor.connection.rollback()
                 return False
 
+            item[0] = item[0].upper()
+
             cursor.execute(insert_statement, item)
             count += 1
 
@@ -294,6 +296,7 @@ def remove_item(cursor: sqlite3.Cursor, item_id: str) -> bool:
         if res.rowcount == 0:
             err_msg = f"Item with ID {item_id} not found! Delete was not performed."
             print(err_msg)
+            return False
 
         cursor.connection.commit()
 

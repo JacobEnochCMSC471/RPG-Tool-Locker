@@ -353,7 +353,7 @@ class TestItemCRUD(unittest.TestCase):
             print(counter)
 
     def test_add_multiple_correct_items(self) -> None:
-        # Test adding multiple valid items to the database.
+        # Test adding multiple valid items to the database. Should return true and place 3 items into the database.
         items_to_add = [
             ("TL001", "Flathead Screwdriver", "6in length", 0, "001", 1),
             ("TL002", "Phillips Screwdriver", "6in length", 0, "002", 2),
@@ -380,12 +380,63 @@ class TestItemCRUD(unittest.TestCase):
         self.assertFalse(result, "Test Failed - Mixed Insert Return Value")
         self.assertListEqual([], items_in_db, "Test Failed - Mixed Insert")
 
-    def test_sql_error_handling(self):
-        locker_db.add_item(self.db_cursor, [("TL001", "Flathead Screwdriver", "6in length", 0, "001", 1)])
-        items_to_add = [
-            ("TL001", "Duplicate ID", "6in length", 0, "001", 1)
-        ]
+    def test_sql_error_handling(self) -> None:
+        insert_statement = "INSERT INTO items VALUES (?, ?, ?, ?, ?, ?)"
+
+        self.db_cursor.execute(insert_statement, ("TL001", "Flathead Screwdriver", "6in length", 0, "001", 1))
+
+        self.db_cursor.connection.commit()
+
+        items_to_add = [("TL001", "Duplicate ID", "6in length", 0, "001", 1)]
+
         result = locker_db.add_item(cursor=self.db_cursor, list_of_items=items_to_add)
         self.assertFalse(result, "Test Failed - SQL Error Handling")
+
         items_in_db = self.db_cursor.execute("SELECT * FROM items").fetchall()
         self.assertEqual(len(items_in_db), 1, "Test Failed - SQL Error Handling")
+
+    def test_valid_delete(self):
+        insert_statement = "INSERT INTO items VALUES (?, ?, ?, ?, ?, ?)"
+
+        # Insert an item into the DB and commit it
+        self.db_cursor.execute(insert_statement, ("TL001", "Flathead Screwdriver", "6in length", 0, "001", 1))
+
+        self.db_cursor.connection.commit()
+
+        del_res = locker_db.remove_item(cursor=self.db_cursor, item_id="TL001")
+        self.assertTrue(del_res, "Test Failed - Remove Valid Item Return Value")
+
+        check_presence = self.db_cursor.execute("SELECT * FROM items").fetchall()
+        self.assertListEqual([], check_presence, "Test Failed - Remove Valid Item")
+
+    def test_invalid_id_delete(self) -> None:
+        insert_statement = "INSERT INTO items VALUES (?, ?, ?, ?, ?, ?)"
+
+        # Insert an item into the DB and commit it
+        self.db_cursor.execute(insert_statement, ("TL001", "Flathead Screwdriver", "6in length", 0, "001", 1))
+
+        self.db_cursor.connection.commit()
+
+        del_res = locker_db.remove_item(cursor=self.db_cursor, item_id=100)
+        self.assertFalse(del_res, "Test Failed - Invalid Delete Return Value")
+
+        check_presence = self.db_cursor.execute("SELECT * FROM items").fetchall()
+        self.assertListEqual([("TL001", "Flathead Screwdriver", "6in length", 0, "001", 1)], check_presence,
+                             "Test Failed - Remove Valid Item")
+
+    def test_item_id_dne(self) -> None:
+        insert_statement = "INSERT INTO items VALUES (?, ?, ?, ?, ?, ?)"
+
+        # Insert an item into the DB and commit it
+        self.db_cursor.execute(insert_statement, ("TL002", "Flathead Screwdriver", "6in length", 0, "001", 1))
+
+        self.db_cursor.connection.commit()
+
+        del_res = locker_db.remove_item(cursor=self.db_cursor, item_id="TL001")
+        self.assertFalse(del_res, "Test Failed - Delete DNE Item Return Value")
+
+        check_presence = self.db_cursor.execute("SELECT * FROM items").fetchall()
+        self.assertListEqual([("TL002", "Flathead Screwdriver", "6in length", 0, "001", 1)], check_presence,
+                             "Test Failed - Remove Valid Item")
+
+        self.assertEqual(1, len(check_presence), "Test Failed - Table Not Length 1 (DNE Delete)")
