@@ -204,7 +204,7 @@ def update_employee(cursor: sqlite3.Cursor, emp_id: str, new_details: tuple) -> 
     return True
 
 
-def get_employee(cursor: sqlite3.Cursor, emp_id: str) -> tuple:
+def get_employee(cursor: sqlite3.Cursor, emp_id: str) -> Union[tuple, None]:
     try:
         select_statement = "SELECT * FROM employees WHERE id = ?"
 
@@ -219,7 +219,7 @@ def get_employee(cursor: sqlite3.Cursor, emp_id: str) -> tuple:
     except sqlite3.Error as e:
         print("Error has occurred! Check logs for answers.")
         print(e)
-        return ()
+        return None
 
 
 def get_all_employees(cursor: sqlite3.Cursor) -> list:
@@ -268,9 +268,9 @@ def add_item(cursor: sqlite3.Cursor, list_of_items: list[tuple[str, str, str, in
                 cursor.connection.rollback()
                 return False
 
-            print(item[0])
+            item = (item[0].upper(), item[1], item[2], item[3], item[4], item[5])
 
-            item[0]= item[0].upper()
+            print(item)
 
             cursor.execute(insert_statement, item)
             count += 1
@@ -375,25 +375,6 @@ def get_all_items(cursor: sqlite3.Cursor) -> list:
         print(e)
         return []
 
-
 '''
 ------------------------------ITEM CRUD FUNCTIONS END------------------------------
 '''
-
-'''ldb = "locker.db"
-
-create_database(ldb)
-
-db_conn = sqlite3.connect(ldb)
-db_cursor = db_conn.cursor()
-
-# add_item(cursor=db_cursor, list_of_items=[("TL001", "Phillips Head Screwdriver", "6 length", 0, "N/A", 1)])
-
-# remove_item(cursor=db_cursor, item_id="TL001")
-
-new_deets = ("Flathead screwdriver", "6in length", 0, "0000001", 1)
-
-update_item(cursor=db_cursor, item_id="TL001", new_details=new_deets)
-
-db_conn.close()
-# remove_employee("12345678", "locker.db")'''
