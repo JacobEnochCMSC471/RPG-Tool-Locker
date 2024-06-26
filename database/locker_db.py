@@ -2,6 +2,7 @@ import sqlite3
 from sqlite3 import Error
 import os
 import logging
+from typing import Union
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, filename='database.log')
 
@@ -267,7 +268,9 @@ def add_item(cursor: sqlite3.Cursor, list_of_items: list[tuple[str, str, str, in
                 cursor.connection.rollback()
                 return False
 
-            item[0] = item[0].upper()
+            print(item[0])
+
+            item[0]= item[0].upper()
 
             cursor.execute(insert_statement, item)
             count += 1
@@ -343,22 +346,23 @@ def update_item(cursor: sqlite3.Cursor, item_id: str, new_details: tuple) -> boo
     return True
 
 
-def get_item(cursor: sqlite3.Cursor, item_id: str) -> tuple:
+def get_item(cursor: sqlite3.Cursor, item_id: str) -> Union[tuple, None]:
     try:
-        select_statement = "SELECT * FROM items WHERE id = ?"
+        select_statement = "SELECT * FROM items WHERE item_id = ?"
 
         cursor.execute(select_statement, (item_id,))
         search_res = cursor.fetchone()
 
         if search_res is None:
             print("Item with ID: {} not found!".format(item_id))
+            return None
 
         return search_res
 
     except sqlite3.Error as e:
         print("Error has occurred! Check logs for answers.")
         print(e)
-        return ()
+        return None
 
 
 def get_all_items(cursor: sqlite3.Cursor) -> list:

@@ -22,8 +22,8 @@ class TestDatabaseFuncs(unittest.TestCase):
         # Attempt to create a duplicate DB with the same name
         test2 = locker_db.create_database("test.db")
 
-        self.assertTrue(test1, "Test1 Create DB Fail")
-        self.assertTrue(test2, "Test2 Create Duplicate DB Fail")
+        self.assertTrue(test1, "Test Create DB Fail")
+        self.assertTrue(test2, "Test Create Duplicate DB Fail")
 
         test_db_conn = sqlite3.connect('test.db')
         test_db_cursor = test_db_conn.cursor()
@@ -43,9 +43,9 @@ class TestDatabaseFuncs(unittest.TestCase):
         test5 = test_db_cursor.execute(
             "SELECT count(*) from sqlite_master WHERE type='table' AND name='locker_doors'").fetchone()[0]
 
-        self.assertEqual(1, test3, "Test3 Fail - Employees table not present.\n")
-        self.assertEqual(1, test4, "Test4 Fail - Items table not present.\n")
-        self.assertEqual(1, test5, "Test5 Fail - Locker Doors table not present.\n")
+        self.assertEqual(1, test3, "Test Fail - Employees table not present.\n")
+        self.assertEqual(1, test4, "Test Fail - Items table not present.\n")
+        self.assertEqual(1, test5, "Test Fail - Locker Doors table not present.\n")
 
         test_db_cursor.close()
         test_db_conn.close()
@@ -56,8 +56,8 @@ class TestDatabaseFuncs(unittest.TestCase):
         test6 = locker_db.isSqlite3Db("test.db")
         test7 = locker_db.isSqlite3Db("database_tests.py")
 
-        self.assertTrue(test6, "Test6 Is_SQL_DB Fail")
-        self.assertFalse(test7, "Test7 Is_SQL_DB Fail")
+        self.assertTrue(test6, "Test Is_SQL_DB Fail")
+        self.assertFalse(test7, "Test Is_SQL_DB Fail")
 
 
 class TestEmployeeCRUD(unittest.TestCase):
@@ -85,8 +85,8 @@ class TestEmployeeCRUD(unittest.TestCase):
 
         test9 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
 
-        self.assertTrue(test8, "Test8 Failed: Single Insert Correct True Return")
-        self.assertListEqual([('12345', 'Jake Enoch', 5)], test9, "Test9 Failed: Single Insert Correct")
+        self.assertTrue(test8, "Test Failed: Single Insert Correct True Return")
+        self.assertListEqual([("12345", "Jake Enoch", 5)], test9, "Test Failed: Single Insert Correct")
 
     def test_insert_func_single_incorrect(self) -> None:
         # Test a single incorrect employee item insert. Check return value and presence in employees table.
@@ -100,8 +100,8 @@ class TestEmployeeCRUD(unittest.TestCase):
 
         test11 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
 
-        self.assertFalse(test10, "Test 10 Failed: Single Insert Incorrect False Return")
-        self.assertListEqual([('12345', 'Jake Enoch', 5)], test11, "Test11 Failed: Single Insert Incorrect")
+        self.assertFalse(test10, "Test Failed: Single Insert Incorrect False Return")
+        self.assertListEqual([("12345", "Jake Enoch", 5)], test11, "Test Failed: Single Insert Incorrect")
 
     def test_insert_func_multiple_correct(self) -> None:
         # Test inserting multiple correctly formatted employees into the table. Check return value and presence
@@ -117,9 +117,9 @@ class TestEmployeeCRUD(unittest.TestCase):
 
         test13 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
 
-        self.assertTrue(test12, "Test12 Failed: Multi Insert True Return")
-        self.assertListEqual([('12345', 'Jake Enoch', 5), ("123", "John Enoch", 4), ("124", "Nick Enoch", 3)], test13,
-                             "Test13 Failed: Multi Insert")
+        self.assertTrue(test12, "Test Failed: Multi Insert True Return")
+        self.assertListEqual([("12345", "Jake Enoch", 5), ("123", "John Enoch", 4), ("124", "Nick Enoch", 3)], test13,
+                             "Test Failed: Multi Insert")
 
     def test_multi_insert_multiple_incorrect(self) -> None:
         # Test inserting multiple incorrectly formatted employees into employee table. Check return val and presence
@@ -136,9 +136,9 @@ class TestEmployeeCRUD(unittest.TestCase):
 
         test15 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
 
-        self.assertFalse(test14, "Test14 Failed: Multi Insert Incorrect False Return")
-        self.assertListEqual([('12345', 'Jake Enoch', 5), ('123', 'John Enoch', 4), ('124', 'Nick Enoch', 3)], test15,
-                             "Test15 Failed: Multi Insert Incorrect")
+        self.assertFalse(test14, "Test Failed: Multi Insert Incorrect False Return")
+        self.assertListEqual([("12345", "Jake Enoch", 5), ("123", "John Enoch", 4), ("124", "Nick Enoch", 3)], test15,
+                             "Test Failed: Multi Insert Incorrect")
 
     def test_delete_existing_employee_correct(self) -> None:
         # Test deleting an employee that exists in the table. Add employee first. Check return value + presence in table.
@@ -151,9 +151,9 @@ class TestEmployeeCRUD(unittest.TestCase):
 
         test17 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
 
-        self.assertTrue(test16, "Test16 Failed: Remove Existing Employee Return Value")
-        self.assertListEqual([('12345', 'Jake Enoch', 5), ('124', 'Nick Enoch', 3)], test17,
-                             "Test17 Failed: Remove Existing Employee")
+        self.assertTrue(test16, "Test Failed: Remove Existing Employee Return Value")
+        self.assertListEqual([("12345", "Jake Enoch", 5), ("124", "Nick Enoch", 3)], test17,
+                             "Test Failed: Remove Existing Employee")
 
     def test_delete_existing_employee_incorrect(self) -> None:
         # Attempt to delete an item in the table using an incorrectly typed employee ID.
@@ -168,9 +168,9 @@ class TestEmployeeCRUD(unittest.TestCase):
 
         test19 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
 
-        self.assertFalse(test18, "Test18 Failed: Remove Existing Employee Incorrect Format Return Value")
-        self.assertListEqual([('12345', 'Jake Enoch', 5), ('124', 'Nick Enoch', 3)], test19,
-                             "Test19 Failed: Remove Existing Employee Wrong Type")
+        self.assertFalse(test18, "Test Failed: Remove Existing Employee Incorrect Format Return Value")
+        self.assertListEqual([("12345", "Jake Enoch", 5), ("124", "Nick Enoch", 3)], test19,
+                             "Test Failed: Remove Existing Employee Wrong Type")
 
     def test_delete_nonexistent_employee(self) -> None:
         # Attempt to delete an employee that doesn't exist in the employees table. Check return value and
@@ -185,9 +185,9 @@ class TestEmployeeCRUD(unittest.TestCase):
 
         test21 = self.db_cursor.execute("SELECT * FROM employees").fetchall()
 
-        self.assertFalse(test20, "Test20 Fail: Remove Nonexistent Employee Return Value")
-        self.assertListEqual([('12345', 'Jake Enoch', 5), ('124', 'Nick Enoch', 3)], test21,
-                             "Test21 Fail: Remove Nonexistent Employee")
+        self.assertFalse(test20, "Test Fail: Remove Nonexistent Employee Return Value")
+        self.assertListEqual([("12345", "Jake Enoch", 5), ("124", "Nick Enoch", 3)], test21,
+                             "Test Fail: Remove Nonexistent Employee")
 
     def test_update_employee_correct(self) -> None:
         # Test correctly updating an employee's data. Check return value and verify that changes occurred to record.
@@ -202,8 +202,8 @@ class TestEmployeeCRUD(unittest.TestCase):
 
         test23 = self.db_cursor.execute("SELECT * FROM employees WHERE id = 124").fetchall()
 
-        self.assertTrue(test22, "Test22 Fail: Update Employee Correct Return Value")
-        self.assertListEqual([("124", "Dave Enoch", 5)], test23, "Test23 Fail: Update Employee Check")
+        self.assertTrue(test22, "Test Fail: Update Employee Correct Return Value")
+        self.assertListEqual([("124", "Dave Enoch", 5)], test23, "Test Fail: Update Employee Check")
 
     def test_update_employee_incorrect(self) -> None:
         # Test attempting to update employee record with incorrectly formatted tuples. Check return val and
@@ -221,7 +221,7 @@ class TestEmployeeCRUD(unittest.TestCase):
         test25 = self.db_cursor.execute("SELECT * FROM employees WHERE id = 12345").fetchall()
 
         self.assertFalse(test24, "Test24 Failed: Incorrect Update Return Value")
-        self.assertListEqual([("12345", "Jake Enoch", 5)], test25, "Test25 Failed: Incorrect Update")
+        self.assertListEqual([("12345", "Jake Enoch", 5)], test25, "Test Failed: Incorrect Update")
 
         incorrect_update = ("Paul Enoch", 4, "This should not be here")
 
@@ -230,7 +230,7 @@ class TestEmployeeCRUD(unittest.TestCase):
         test27 = self.db_cursor.execute("SELECT * FROM employees WHERE id = 12345").fetchall()
 
         self.assertFalse(test26, "Test26 Fail: Incorrect Update Return Value, 3 parameters")
-        self.assertListEqual([("12345", "Jake Enoch", 5)], test27, "Test27 Fail: Incorrect Update 3 Parameters")
+        self.assertListEqual([("12345", "Jake Enoch", 5)], test27, "Test Fail: Incorrect Update 3 Parameters")
 
     def test_get_employee_exists(self) -> None:
         # Test to make sure retrieving an employee is correct. Check return value (list).
@@ -240,7 +240,7 @@ class TestEmployeeCRUD(unittest.TestCase):
 
         test28 = locker_db.get_employee(cursor=self.db_cursor, emp_id="12345")
 
-        self.assertTupleEqual(('12345', 'Jake Enoch', 5), test28, "Test28 Failed: Get Employee (Exists)")
+        self.assertTupleEqual(("12345", "Jake Enoch", 5), test28, "Test Failed: Get Employee (Exists)")
 
     def test_get_employee_dne(self) -> None:
         # Test functionality of retrieve function when an employee does not exist. Check return type (list).
@@ -250,7 +250,7 @@ class TestEmployeeCRUD(unittest.TestCase):
 
         test29 = locker_db.get_employee(cursor=self.db_cursor, emp_id="007")
 
-        self.assertIsNone(test29, "Test29 Failed: Get Employee (does not exist)")
+        self.assertIsNone(test29, "Test Failed: Get Employee (does not exist)")
 
     def test_get_all_employees(self) -> None:
         # Test functionality of get_all_employees() function.
@@ -261,7 +261,7 @@ class TestEmployeeCRUD(unittest.TestCase):
         test30 = locker_db.get_all_employees(self.db_cursor)
 
         self.assertListEqual([("12345", "Jake Enoch", 5), ("124", "Dave Enoch", 5)], test30,
-                             "Test30 Failed: Get All Employees Return")
+                             "Test Failed: Get All Employees Return")
 
 
 class TestItemCRUD(unittest.TestCase):
@@ -291,9 +291,24 @@ class TestItemCRUD(unittest.TestCase):
 
         test32 = self.db_cursor.execute("SELECT * FROM items").fetchall()
 
-        self.assertTrue(test31, "Test 31 Failed - Single Insert Return Value")
+        self.assertTrue(test31, "Test Failed - Single Insert Return Value")
 
-        self.assertListEqual(items_to_add, test32, "Test 32 Failed - Single Insert")
+        self.assertListEqual(items_to_add, test32, "Test Failed - Single Insert")
+
+    def test_add_single_item_lowercase_item_id(self) -> None:
+        insert_statement = "INSERT INTO items VALUES (?, ?, ?, ?, ?, ?)"
+
+        # Insert an item into the DB and commit it
+        res = locker_db.add_item(cursor=self.db_cursor, list_of_items=[("tl002", "Flathead Screwdriver", "6in length", 0, "001", 1)])
+
+        insert_res = self.db_cursor.execute("SELECT * FROM items").fetchall()
+
+        self.assertTrue(res, "Test Failed - Add Lowercase Item ID Item Return Value")
+
+        fail_msg = "Test Failed = Add Lowercase Item ID toUpper did not work"
+        self.assertListEqual([("TL002", "Flathead Screwdriver", "6in length", 0, "001", 1)], insert_res)
+
+        return
 
     def test_add_single_item_incorrect(self) -> None:
 
@@ -308,28 +323,18 @@ class TestItemCRUD(unittest.TestCase):
 
         items_list = [items_to_add1, items_to_add2, items_to_add3, items_to_add4, items_to_add5, items_to_add6]
 
-        counter = 33
-
         # Iteratively check all 6 items instead of using a big non-dynamic block of code to check each one individually.
         for item in items_list:
             curr_test_return = locker_db.add_item(self.db_cursor, list_of_items=item)
             curr_test_retrieve = self.db_cursor.execute("SELECT * FROM items").fetchall()
 
-            self.assertFalse(curr_test_return, f"Test {counter} Failed - Bad Insert Return Value")
+            self.assertFalse(curr_test_return, f"Test Failed - Bad Insert Return Value")
 
-            counter += 1
-
-            self.assertListEqual([], curr_test_retrieve, f"Test {counter} Failed - Bad Single Insert")
-
-            counter += 1
-
-        print(f"Test Counter: {counter}")
+            self.assertListEqual([], curr_test_retrieve, f"Test Failed - Bad Single Insert")
 
     def test_empty_insert(self) -> None:
         # Test if an empty list, a list with an empty tuple and an empty tuple can be added to the table.
         # Check return type and presence in table.
-
-        counter = 46
 
         # Test whether these empty lists/tuples can be added to the item table
         item_to_insert1 = []
@@ -342,15 +347,9 @@ class TestItemCRUD(unittest.TestCase):
             curr_test_return = locker_db.add_item(cursor=self.db_cursor, list_of_items=item)
             curr_test_retrieve = self.db_cursor.execute("SELECT * FROM items").fetchall()
 
-            self.assertFalse(curr_test_return, f"Test {counter} Failed - Empty Insert Return Value")
+            self.assertFalse(curr_test_return, f"Test Failed - Empty Insert Return Value")
 
-            counter += 1
-
-            self.assertListEqual([], curr_test_retrieve, f"Test {counter} Failed - Empty Insert")
-
-            counter += 1
-
-            print(counter)
+            self.assertListEqual([], curr_test_retrieve, f"Test Failed - Empty Insert")
 
     def test_add_multiple_correct_items(self) -> None:
         # Test adding multiple valid items to the database. Should return true and place 3 items into the database.
@@ -440,3 +439,36 @@ class TestItemCRUD(unittest.TestCase):
                              "Test Failed - Remove Valid Item")
 
         self.assertEqual(1, len(check_presence), "Test Failed - Table Not Length 1 (DNE Delete)")
+
+    def test_get_item_valid_id(self) -> None:
+        insert_statement = "INSERT INTO items VALUES (?, ?, ?, ?, ?, ?)"
+
+        # Insert an item into the DB and commit it
+        self.db_cursor.execute(insert_statement, ("TL002", "Flathead Screwdriver", "6in length", 0, "001", 1))
+
+        self.db_cursor.connection.commit()
+
+        search_res = locker_db.get_item(cursor=self.db_cursor, item_id="TL002")
+
+        failed_msg = "Test Failed = Retrieve Valid Item ID"
+
+        self.assertTupleEqual(("TL002", "Flathead Screwdriver", "6in length", 0, "001", 1), search_res, failed_msg)
+
+    def test_get_item_invalid_id(self) -> None:
+        insert_statement = "INSERT INTO items VALUES (?, ?, ?, ?, ?, ?)"
+
+        # Insert an item into the DB and commit it
+        self.db_cursor.execute(insert_statement, ("TL002", "Flathead Screwdriver", "6in length", 0, "001", 1))
+
+        self.db_cursor.connection.commit()
+
+        get_item_res = locker_db.get_item(cursor=self.db_cursor, item_id=100)
+
+        self.assertIsNone(get_item_res, "Test Failed - Get Invalid Item ID")
+
+    def test_db_error_catching_get_item(self) -> None:
+        self.db_cursor.execute("DROP TABLE items")
+
+        get_item_res = locker_db.get_item(cursor=self.db_cursor, item_id="TL001")
+
+        self.assertFalse(get_item_res, "Test Failed - SQL Exception for get_items()")
