@@ -1,6 +1,5 @@
-import serial.rs485
 import serial
-
+from serial import rs485
 """
 #--------------------CONSTANTS BEGIN--------------------#
 """
@@ -124,7 +123,7 @@ def bytes_to_binary(byte_str: bytes) -> (bool, list):
 # Reply format: [cmd_header, board_addr, lock_addr, lock_status, check_code]
 def send_command(port: str, command: bytes, cmd_type: str):
     try:
-        ser = serial.rs485.RS485(port=port,
+        ser = rs485.RS485(port=port,
                                  baudrate=9600,
                                  stopbits=serial.STOPBITS_ONE,
                                  timeout=0.75,
